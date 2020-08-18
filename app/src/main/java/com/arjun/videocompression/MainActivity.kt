@@ -46,8 +46,6 @@ class MainActivity : AppCompatActivity() {
             Timber.d(file.absolutePath)
             runCompression(file.path)
         }
-        val mediaSource = buildMediaSourceNew(it)
-        player.prepare(mediaSource, true, false)
     }
 
     private fun copyToLocalFile(uri: Uri): File {
@@ -75,12 +73,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun runCompression(path: String) {
-        FFmpeg.executeAsync("-i $path -c:v mpeg4 ${fileHelper.getBaseDirectory()}/videos/output.mp4") { executionId, returnCode ->
+        FFmpeg.executeAsync("-y -i $path -c:v mpeg4 ${fileHelper.getBaseDirectory()}/videos/output.mp4") { executionId, returnCode ->
             when (returnCode) {
                 RETURN_CODE_SUCCESS -> {
                     val uri = fileHelper.getFileProviderUri(File("${fileHelper.getBaseDirectory()}/videos/output.mp4"))
                     Timber.d(uri.path)
                     Timber.d("Async command execution completed successfully.")
+                    val mediaSource = buildMediaSourceNew(uri)
+                    player.prepare(mediaSource, true, false)
                 }
                 RETURN_CODE_CANCEL -> {
                     Timber.d("Async command execution cancelled by user.")

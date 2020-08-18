@@ -20,21 +20,6 @@ class FileHelper @Inject constructor(private val context: Context) {
     }
 
     @Throws(IOException::class)
-    fun createImageFile(): File {
-        return createTempFile("photos", "IMG", ".jpg")
-    }
-
-    @Throws(IOException::class)
-    fun createCsvFile(name: String): File {
-        return createTempFile("leaderboard", name + "_", ".csv")
-    }
-
-    @Throws(IOException::class)
-    fun createTosFile(): File {
-        return createTempFile("tos", "TOS", ".htm")
-    }
-
-    @Throws(IOException::class)
     private fun createTempFile(dir: String, prefix: String, suffix: String): File {
         // Create an image file name
         val base = getBaseDirectory()
