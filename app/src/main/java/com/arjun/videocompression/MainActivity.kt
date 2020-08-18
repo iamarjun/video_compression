@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.arjun.videocompression.databinding.ActivityMainBinding
+import com.arjun.videocompression.util.FileHelper
 import com.arjun.videocompression.util.viewBinding
 import com.google.android.exoplayer2.DefaultLoadControl
 import com.google.android.exoplayer2.DefaultRenderersFactory
@@ -16,10 +17,15 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
+import javax.inject.Inject
 
-
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    internal lateinit var fileHelper: FileHelper
 
     private val binding by viewBinding(ActivityMainBinding::inflate)
     private lateinit var player: SimpleExoPlayer
