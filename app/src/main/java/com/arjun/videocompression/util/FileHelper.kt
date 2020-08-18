@@ -37,10 +37,7 @@ class FileHelper @Inject constructor(private val context: Context) {
     @Throws(IOException::class)
     private fun createTempFile(dir: String, prefix: String, suffix: String): File {
         // Create an image file name
-        var base = context.externalCacheDir
-        if (base == null) {
-            base = context.cacheDir
-        }
+        val base = getBaseDirectory()
         val fileDir = File(base, dir)
         return if (fileDir.exists() || fileDir.mkdir()) {
             File.createTempFile(prefix, suffix, fileDir)
@@ -49,10 +46,20 @@ class FileHelper @Inject constructor(private val context: Context) {
         }
     }
 
+    fun getBaseDirectory(): File? {
+        var base = this.context.externalCacheDir
+        if (base == null) {
+            base = context.cacheDir
+        }
+
+        return base
+    }
+
+
     @Throws(IOException::class)
     fun copyToLocalFile(url: Uri): File {
         val suffix = ".mp4"
-        val file = createTempFile("videos", "", suffix)
+        val file = createTempFile("videos", "vid-", suffix)
         Timber.d("Uri: file name : %s", file.name)
         val input = context.contentResolver.openInputStream(url)
         FileUtils.copyInputStreamToFile(input, file)
