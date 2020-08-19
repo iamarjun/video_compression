@@ -8,5 +8,20 @@
     <fragment
         android:id="@+id/videoPickerFragment"
         android:name="com.arjun.videocompression.VideoPickerFragment"
-        android:label="VideoPickerFragment" />
+        android:label="VideoPickerFragment">
+        <action
+            android:id="@+id/action_videoPickerFragment_to_videoPlayBackFragment"
+            app:destination="@id/videoPlayBackFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/videoPlayBackFragment"
+        android:name="com.arjun.videocompression.VideoPlayBackFragment"
+        android:label="VideoPlayBackFragment">
+
+        <argument
+            android:name="videoUri"
+            app:argType="string" />
+
+    </fragment>
 </navigation>

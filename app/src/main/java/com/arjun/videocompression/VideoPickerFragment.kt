@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import com.arjun.videocompression.databinding.FragmentVideoPickerBinding
 import com.arjun.videocompression.util.viewBinding
 import timber.log.Timber
@@ -17,6 +18,9 @@ class VideoPickerFragment : Fragment() {
 
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) {
         Timber.d(it.toString())
+        val action =
+            VideoPickerFragmentDirections.actionVideoPickerFragmentToVideoPlayBackFragment(it.toString())
+        requireView().findNavController().navigate(action)
     }
 
     override fun onCreateView(
