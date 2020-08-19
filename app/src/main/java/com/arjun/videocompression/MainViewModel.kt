@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.arjun.videocompression.util.Event
 import com.arjun.videocompression.util.FileHelper
 import com.arthenica.mobileffmpeg.Config
 import com.arthenica.mobileffmpeg.FFmpeg
@@ -17,10 +18,19 @@ import java.io.File
 
 class MainViewModel @ViewModelInject constructor(private val fileHelper: FileHelper) : ViewModel() {
 
-    private val _compressedVideoUri by lazy { MutableLiveData<Uri>() }
+    private val _compressedVideoUri by lazy { MutableLiveData<Event<Uri>>() }
 
-    val compressedVideoUri: LiveData<Uri>
+    private val _videoSizeBeforeCompression by lazy { MutableLiveData<Event<String>>() }
+    private val _videoSizeAfterCompression by lazy { MutableLiveData<Event<String>>() }
+
+    val compressedVideoUri: LiveData<Event<Uri>>
         get() = _compressedVideoUri
+
+    val videoSizeBeforeCompression: LiveData<Event<String>>
+        get() = _videoSizeBeforeCompression
+
+    val videoSizeAfterCompression: LiveData<Event<String>>
+        get() = _videoSizeAfterCompression
 
     fun compressVideo(uri: Uri, bitrate: String) {
 
@@ -42,6 +52,7 @@ class MainViewModel @ViewModelInject constructor(private val fileHelper: FileHel
         val inputSize = FileHelper.getFolderSizeLabel(inputFile)
 
         Timber.d("size before compression $inputSize")
+        _videoSizeBeforeCompression.postValue(Event(inputSize))
 
         Timber.d(inputFile.path)
         Timber.d(inputFile.absolutePath)
@@ -55,11 +66,13 @@ class MainViewModel @ViewModelInject constructor(private val fileHelper: FileHel
                     val outputSize = FileHelper.getFolderSizeLabel(outputFile)
                     Timber.d("size after compression $outputSize")
 
+                    _videoSizeAfterCompression.postValue(Event(outputSize))
+
                     val outputUri = fileHelper.getFileProviderUri(outputFile)
                     Timber.d(outputUri.path)
                     Timber.d("Async command execution completed successfully.")
 
-                    _compressedVideoUri.postValue(outputUri)
+                    _compressedVideoUri.postValue(Event(outputUri))
                 }
                 Config.RETURN_CODE_CANCEL -> {
                     Timber.d("Async command execution cancelled by user.")

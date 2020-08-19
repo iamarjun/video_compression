@@ -5,12 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
-import com.arjun.videocompression.databinding.FragmentVideoPlayBackBinding
+import com.arjun.videocompression.databinding.FragmentCompressedVideoPlayBackBinding
 import com.arjun.videocompression.util.EventObserver
 import com.arjun.videocompression.util.viewBinding
 import com.google.android.exoplayer2.DefaultLoadControl
@@ -23,13 +24,12 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-import com.google.android.material.snackbar.Snackbar
-import timber.log.Timber
 
-class VideoPlayBackFragment : Fragment() {
 
-    private val binding by viewBinding(FragmentVideoPlayBackBinding::bind)
-    private val args: VideoPlayBackFragmentArgs by navArgs()
+class CompressedVideoPlayBackFragment : Fragment() {
+
+    private val binding by viewBinding(FragmentCompressedVideoPlayBackBinding::bind)
+    private val args: CompressedVideoPlayBackFragmentArgs by navArgs()
     private lateinit var player: SimpleExoPlayer
     private val viewModel: MainViewModel by activityViewModels()
 
@@ -43,6 +43,16 @@ class VideoPlayBackFragment : Fragment() {
             DefaultLoadControl()
         )
 
+        val callback: OnBackPressedCallback =
+            object : OnBackPressedCallback(true /* enabled by default */) {
+                override fun handleOnBackPressed() {
+                    val action =
+                        CompressedVideoPlayBackFragmentDirections.actionCompressedVideoPlayBackFragmentToVideoPickerFragment()
+                    requireView().findNavController().navigate(action)
+                }
+            }
+        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
+
     }
 
     override fun onCreateView(
@@ -50,7 +60,7 @@ class VideoPlayBackFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_video_play_back, container, false)
+        return inflater.inflate(R.layout.fragment_compressed_video_play_back, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -61,46 +71,13 @@ class VideoPlayBackFragment : Fragment() {
         val mediaSource = buildMediaSourceNew(args.videoUri.toUri())
         player.prepare(mediaSource, true, false)
 
-        binding.compressVideo.setOnClickListener {
-            val bitrate = binding.bitrateField.text.toString()
 
-            when {
-                bitrate.isEmpty() -> Snackbar.make(requireView(), "Enter a value for bitrate", Snackbar.LENGTH_LONG)
-                    .show()
-                bitrate.toInt() < 100 -> Snackbar.make(requireView(), "Enter a value greater than 100", Snackbar.LENGTH_LONG)
-                    .show()
-                else -> {
-                    viewModel.compressVideo(args.videoUri.toUri(), bitrate)
-                    binding.progress.visibility = View.VISIBLE
-                    Snackbar.make(
-                        requireView(),
-                        "Compression in progress......",
-                        Snackbar.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
+        viewModel.videoSizeBeforeCompression.observe(viewLifecycleOwner, EventObserver {
+            binding.sizeBeforeCompression.text = "Video size before compression: $it"
+        })
 
-        viewModel.compressedVideoUri.observe(viewLifecycleOwner, EventObserver { uri ->
-
-            Timber.d(uri.toString())
-
-            binding.progress.visibility = View.INVISIBLE
-
-
-            Snackbar.make(
-                requireView(),
-                "Video Compressed...",
-                Snackbar.LENGTH_INDEFINITE
-            ).setAction("View Video") {
-                val action =
-                    VideoPlayBackFragmentDirections.actionVideoPlayBackFragmentToCompressedVideoPlayBackFragment(
-                        uri.toString()
-                    )
-                requireView().findNavController().navigate(action)
-            }
-                .show()
-
+        viewModel.videoSizeAfterCompression.observe(viewLifecycleOwner, EventObserver {
+            binding.sizeAfterCompression.text = "Video size after compression: $it"
         })
 
     }
@@ -112,6 +89,7 @@ class VideoPlayBackFragment : Fragment() {
             release()
         }
     }
+
 
     private fun buildMediaSourceNew(uri: Uri): MediaSource? {
         val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(

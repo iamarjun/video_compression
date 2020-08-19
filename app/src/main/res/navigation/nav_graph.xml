@@ -22,6 +22,22 @@
         <argument
             android:name="videoUri"
             app:argType="string" />
+        <action
+            android:id="@+id/action_videoPlayBackFragment_to_compressedVideoPlayBackFragment"
+            app:destination="@id/compressedVideoPlayBackFragment" />
 
+    </fragment>
+
+    <fragment
+        android:id="@+id/compressedVideoPlayBackFragment"
+        android:name="com.arjun.videocompression.CompressedVideoPlayBackFragment"
+        android:label="CompressedVideoPlayBackFragment">
+        <argument
+            android:name="videoUri"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_compressedVideoPlayBackFragment_to_videoPickerFragment"
+            app:destination="@id/videoPickerFragment"
+            app:popUpTo="@id/videoPickerFragment" />
     </fragment>
 </navigation>
